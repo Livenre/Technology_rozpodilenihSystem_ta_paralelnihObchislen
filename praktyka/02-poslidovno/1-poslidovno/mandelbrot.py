@@ -49,17 +49,23 @@ def zamir(fn, prohoniv=3, *a):
 
 
 if __name__ == "__main__":
-    print("Виконую 3 прогони для заміру часу...")
+    print("Виконую 3 прогони для заміру часу...\n")
     min_time, all_times, base = zamir(poslidovno, 3)
     
     rozkyd = (max(all_times) - min(all_times)) / min_time * 100
     
+    runs_text = (
+        f"Прогін перший: {all_times[0]:.3f} с\n"
+        f"Прогін другий: {all_times[1]:.3f} с\n"
+        f"Прогін третій: {all_times[2]:.3f} с"
+    )
+    
+    print(runs_text)
     print(f"Мінімум із трьох прогонів: {min_time:.3f} с")
     print(f"Розкид між прогонами: {rozkyd:.1f} %")
 
     print("\nЗберігаю картинку...")
     t_start = perf_counter()
-
     zberegty_pgm(base, "mandelbrot.pgm")
     t_zapys = perf_counter() - t_start
     
@@ -74,14 +80,22 @@ if __name__ == "__main__":
     
     profiler.disable()
     
-
     assert r == base, "результат розійшовся з послідовним"
     print("assert пройдено: результат збігається.")
     
     print("\n-_-_- cProfile -_-_-")
-    stats = pstats.Stats(profiler)
-    stats.sort_stats('tottime').print_stats(10)
-    
-    with open("profil.txt", "w") as f:
-        stats = pstats.Stats(profiler, stream=f)
-        stats.sort_stats('tottime').print_stats()
+    stats_console = pstats.Stats(profiler)
+    stats_console.sort_stats('tottime').print_stats(10)
+
+    with open("profil.txt", "w", encoding="utf-8") as f:
+        f.write("Деталі прогонів:\n")
+        f.write(runs_text + "\n")
+        f.write(f"Мінімум із трьох прогонів: {min_time:.3f} с\n")
+        f.write(f"Розкид між прогонами: {rozkyd:.1f} %\n")
+        f.write(f"Послідовна частка (запис): {t_zapys:.3f} с = {chastka_zapysu:.1f} %\n")
+        
+        f.write("\n-_-_- cProfile -_-_-\n")
+
+        stats_file = pstats.Stats(profiler, stream=f)
+        stats_file.sort_stats('tottime').print_stats()
+
